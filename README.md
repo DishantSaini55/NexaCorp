@@ -1,17 +1,25 @@
 # NexaCorp
 
-Modern multi-page React website for cybersecurity research and education.
+Enterprise-style, multi-page React frontend for cybersecurity education, UX research, and transparent interaction analytics.
 
-NexaCorp is a realistic enterprise-style frontend built to simulate a corporate security platform experience. It includes a multi-stage login demo, transparent in-memory analytics, and a premium responsive UI.
+![Vite](https://img.shields.io/badge/Vite-5.x-646CFF?logo=vite&logoColor=white)
+![React](https://img.shields.io/badge/React-18.x-61DAFB?logo=react&logoColor=0b0f16)
+![Tailwind](https://img.shields.io/badge/Tailwind_CSS-4.x-38BDF8?logo=tailwindcss&logoColor=0b0f16)
+![Router](https://img.shields.io/badge/React_Router-6.x-CA4245?logo=reactrouter&logoColor=white)
+![License](https://img.shields.io/badge/License-Educational-blue)
 
-## Highlights
+## Overview
 
-- Modern premium UI/UX (responsive on mobile, tablet, desktop)
-- Multi-page navigation with React Router
-- Five production-style pages: Home, About, Services, Careers, Login
-- Multi-stage login simulation (credentials, MFA, lockout, reset flow)
-- Transparent session analytics (no sensitive data capture)
-- Export analytics data as JSON from built-in dev panel
+NexaCorp is a realistic corporate website simulation with a premium, responsive UI and a multi-stage login demo. It is designed for controlled demonstrations, awareness training, and security UX research.
+
+## Key Features
+
+- Premium, modern UI/UX with responsive layouts
+- Five complete pages: Home, About, Services, Careers, Login
+- Multi-stage authentication simulation (login, MFA, lockout, reset)
+- Transparent, in-memory session analytics
+- Built-in analytics viewer and JSON export
+- Accessible interaction states and reduced-motion support
 
 ## Tech Stack
 
@@ -19,7 +27,71 @@ NexaCorp is a realistic enterprise-style frontend built to simulate a corporate 
 - Vite 5
 - React Router DOM 6
 - Tailwind CSS 4
-- Lucide React icons
+- Lucide React
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js 18+
+- npm 9+
+
+### Install
+
+```bash
+npm install
+```
+
+### Run Development Server
+
+```bash
+npm run dev
+```
+
+Local URL: http://localhost:3000
+
+### Build Production Bundle
+
+```bash
+npm run build
+npm run preview
+```
+
+## Routes
+
+| Route | Page | Purpose |
+| --- | --- | --- |
+| / | Home | Product positioning, metrics, CTAs |
+| /about | About | Story, mission/vision, team |
+| /services | Services | Security offerings and demo CTA |
+| /careers | Careers | Job listings and culture |
+| /login | Login | Multi-stage authentication simulation |
+
+## Login Demo Flow
+
+1. Stage 1: Username/password and remember device
+2. Stage 2: MFA entry with countdown timer
+3. Stage 3: Locked account state
+4. Stage 4: Password reset request
+5. Stage 5: Reset confirmation
+
+## Analytics (Transparent by Design)
+
+The app tracks non-sensitive interaction data in memory using the analytics utility in src/utils/analytics.js.
+
+Collected categories:
+
+- Page views and time spent
+- Scroll depth
+- UI interactions (buttons, links, forms)
+- Basic environment metadata (language, platform, viewport)
+
+### View Session Data
+
+1. Interact with the app (navigate, scroll, click)
+2. Use the hidden bottom-right trigger in the UI
+3. Open the Session Analytics modal
+4. Copy or download JSON snapshot
 
 ## Project Structure
 
@@ -42,169 +114,59 @@ nexacorp/
     index.css
   index.html
   package.json
-  vite.config.js
   postcss.config.js
+  tailwind.config.js
+  vite.config.js
 ```
 
-## Getting Started
+## Available Scripts
 
-### 1) Install dependencies
+- npm run dev: start local development server
+- npm run build: create optimized production build
+- npm run preview: preview production build locally
 
-```bash
-npm install
-```
-
-### 2) Run locally
-
-```bash
-npm run dev
-```
-
-Open: `http://localhost:3000`
-
-### 3) Production build
-
-```bash
-npm run build
-npm run preview
-```
-
-## Pages
-
-- `/` Home: Hero, value props, trust section, CTA
-- `/about` About: Story, mission/vision, stats, leadership
-- `/services` Services: Security offerings and sales CTA
-- `/careers` Careers: Job listings and culture section
-- `/login` Login: Multi-stage authentication demo
-
-## Login Demo Flow
-
-1. Stage 1: Username/password + remember device
-2. Stage 2: MFA code input + countdown timer
-3. Stage 3: Account locked state
-4. Stage 4: Forgot password input
-5. Stage 5: Reset confirmation
-
-## Transparent Analytics
-
-The app includes an in-memory analytics utility (`src/utils/analytics.js`) that tracks:
-
-- Page views and time spent
-- Scroll depth
-- UI interactions (buttons, links, form actions)
-- Basic environment metadata (viewport, language, platform)
-
-### Dev Analytics Panel
-
-- Hidden trigger at bottom-right corner (for controlled demo use)
-- View current session analytics JSON
-- Copy JSON to clipboard
-- Download JSON snapshot
-
-## Security & Ethics
-
-This repository is for education, UX demonstration, and controlled research only.
-
-What this project does:
-
-- Demonstrates realistic enterprise login UX flows
-- Tracks non-sensitive interaction data in memory
-- Supports transparent analytics review/export
-
-What this project does not do:
-
-- No credential exfiltration
-- No external analytics transmission
-- No backend persistence by default
-- No malware, exploit, or stealth collection logic
-
-## Accessibility & UX
-
-- Responsive layouts across breakpoints
-- Focus-visible outlines and readable contrast
-- Reduced-motion support via CSS media query
-- Consistent spacing, hierarchy, and component states
-
-## Scripts
-
-- `npm run dev` - start dev server
-- `npm run build` - build for production
-- `npm run preview` - preview production build
-
-## License
-
-For educational and internal demonstration use.
-
-## 👀 View Session Data
-
-1. Spend time on the site (click around, scroll, interact)
-2. Click the **invisible 1x1px button** in the **bottom-right corner**
-3. A modal opens showing all collected session data
-4. **Copy JSON** or **Download JSON** to export data
-
-## 📦 Deployment
+## Deployment
 
 ### Vercel
+
 ```bash
-npm install -g vercel
 vercel
 ```
 
 ### Netlify
+
 ```bash
 npm run build
-# Drag dist/ folder to Netlify
 ```
 
-### Docker
-```dockerfile
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
-EXPOSE 3000
-CMD ["npm", "run", "preview"]
-```
+Deploy the dist directory.
 
-## 🤝 Contributing
+## Security and Ethical Use
 
-This is an educational project. Feel free to:
-- Extend the analytics
-- Add more pages
-- Improve styling
-- Add more realistic content
-- Implement additional demo features
+This project is intended for educational and authorized testing environments only.
 
-## ⚠️ Disclaimer
+Allowed usage:
 
-This project is for **educational and authorized security research only**. 
+- Security awareness training
+- UX and flow demonstrations
+- Controlled research and analytics studies
 
-**Do NOT use this to:**
-- Trick users into thinking it's real
-- Steal credentials
-- Perform unauthorized testing
-- Circumvent security systems
-- Violate laws or ethical guidelines
+Not allowed:
 
-**Always:**
-- Get explicit authorization before testing
-- Disclose the true nature of testing
-- Comply with local laws
-- Follow responsible disclosure practices
+- Credential theft or impersonation
+- Unauthorized phishing campaigns
+- Malware delivery or exploit activity
+- Any unlawful or deceptive deployment
 
-## 📝 License
+## Contributing
 
-Educational use only. For detailed terms, see specific use case documentation.
+Contributions are welcome for:
 
-## 🎓 Learning Resources
+- UI polish and accessibility improvements
+- Additional demo scenarios
+- Performance optimization
+- Documentation and developer experience
 
-- **React Router:** https://reactrouter.com/
-- **Tailwind CSS:** https://tailwindcss.com/
-- **Vite:** https://vitejs.dev/
-- **Lucide Icons:** https://lucide.dev/
+## License
 
----
-
-**Built with ❤️ for cybersecurity education and research.**
+Educational/internal use. Ensure lawful and authorized usage in your environment.
