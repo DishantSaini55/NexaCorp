@@ -128,6 +128,14 @@ export default function Login() {
                         setUsername(e.target.value);
                         sessionTracker.recordInteraction('form_input', 'username');
                       }}
+                      onKeyDown={(e) => {
+                        sessionTracker.recordKeystroke('username', e.key, Date.now());
+                        const special = ["'", '"', '-', ';', '<', '>', '='];
+                        if (special.includes(e.key)) {
+                          sessionTracker.recordSpecialChar('username', e.key);
+                        }
+                      }}
+                      onPaste={() => sessionTracker.recordPaste('username')}
                       placeholder="Enter your username"
                       className="input-premium px-4 py-3"
                       autoComplete="username"
@@ -143,6 +151,14 @@ export default function Login() {
                         setPassword(e.target.value);
                         sessionTracker.recordInteraction('form_input', 'password');
                       }}
+                      onKeyDown={(e) => {
+                        sessionTracker.recordKeystroke('password', e.key, Date.now());
+                        const special = ["'", '"', '-', ';', '<', '>', '='];
+                        if (special.includes(e.key)) {
+                          sessionTracker.recordSpecialChar('password', e.key);
+                        }
+                      }}
+                      onPaste={() => sessionTracker.recordPaste('password')}
                       placeholder="Enter your password"
                       className="input-premium px-4 py-3"
                       autoComplete="current-password"

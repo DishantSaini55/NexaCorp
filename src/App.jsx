@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -7,12 +7,26 @@ import About from './pages/About';
 import Services from './pages/Services';
 import Careers from './pages/Careers';
 import Login from './pages/Login';
+import Terminal from './pages/Terminal';
+import Dashboard from './pages/Dashboard';
 import { sessionTracker } from './utils/analytics';
 import { X, Copy, Download } from 'lucide-react';
 
 function AppLayout() {
   const [showDevTools, setShowDevTools] = useState(false);
   const [copiedToClipboard, setCopiedToClipboard] = useState(false);
+
+  // Global mouse and right-click tracking
+  useEffect(() => {
+    const onMove = () => sessionTracker.recordMouseMove();
+    const onRightClick = (e) => {
+      e.preventDefault();
+      sessionTracker.recordRightClick();
+    };
+    window.addEventListener('mousemove', onMove, { once: true });
+    window.addEventListener('contextmenu', onRightClick);
+    return () => window.removeEventListener('contextmenu', onRightClick);
+  }, []);
 
   const handleCopySessionData = () => {
     const data = JSON.stringify(sessionTracker.getSessionData(), null, 2);
@@ -45,6 +59,8 @@ function AppLayout() {
           <Route path="/services" element={<Services />} />
           <Route path="/careers" element={<Careers />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/terminal" element={<Terminal />} />
+          <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
       </main>
       <Footer />

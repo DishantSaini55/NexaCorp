@@ -1,4 +1,4 @@
-// Global session analytics - transparent, non-invasive
+// Global session analytics - transparent, non-invasive with honeypot signals
 export const sessionTracker = {
   sessionId: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   startTime: Date.now(),
@@ -6,6 +6,12 @@ export const sessionTracker = {
   currentPage: null,
   interactions: [],
   scrollDepth: {},
+  // Honeypot signals
+  keystrokeLog: [],
+  mouseMovementDetected: false,
+  pasteDetected: false,
+  rightClickAttempted: false,
+  specialCharsDetected: [],
 
   recordPageView(page) {
     this.currentPage = page;
@@ -46,6 +52,30 @@ export const sessionTracker = {
     }
   },
 
+  recordKeystroke(field, key, timestamp) {
+    const last = this.keystrokeLog[this.keystrokeLog.length - 1];
+    const gap = last ? timestamp - last.timestamp : 0;
+    this.keystrokeLog.push({ field, key: key.length > 1 ? key : '*', gap, timestamp });
+  },
+
+  recordMouseMove() {
+    this.mouseMovementDetected = true;
+  },
+
+  recordPaste(field) {
+    this.pasteDetected = true;
+    this.recordInteraction('paste_detected', field);
+  },
+
+  recordRightClick() {
+    this.rightClickAttempted = true;
+    this.recordInteraction('right_click', 'page');
+  },
+
+  recordSpecialChar(field, char) {
+    this.specialCharsDetected.push({ field, char, timestamp: Date.now() });
+  },
+
   getSessionData() {
     return {
       sessionId: this.sessionId,
@@ -53,6 +83,11 @@ export const sessionTracker = {
       duration: Date.now() - this.startTime,
       pages: this.pages,
       totalInteractions: this.interactions.length,
+      keystrokeLog: this.keystrokeLog,
+      mouseMovementDetected: this.mouseMovementDetected,
+      pasteDetected: this.pasteDetected,
+      rightClickAttempted: this.rightClickAttempted,
+      specialCharsDetected: this.specialCharsDetected,
       userAgent: navigator.userAgent,
       platform: navigator.platform,
       language: navigator.language,
